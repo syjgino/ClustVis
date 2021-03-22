@@ -25,6 +25,19 @@ sudo docker run -d \
 
 ClustVis should then be running on ```<myURL>:<myPort>```.
 
+Alternatively, you can start the container with Docker Desktop:
+
+1. Pull Docker image with command:
+```
+sudo docker pull taunometsalu/clustvis
+```
+2. Download this github project and unzip.
+3. Open Docker Destop, find taunometsalu/clustvis under Images and click Run.
+4. Fill in the customer name, port and the location of the ClustVis-master folder as the Host path. Then fill the container path: /srv/shiny-server/:ro
+
+
+
+
 ## R package
 To start using ClustVis R package, you can look at the examples in the vignette that comes with the package:
 
