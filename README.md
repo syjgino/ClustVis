@@ -34,7 +34,7 @@ sudo docker pull taunometsalu/clustvis
 2. Download this github project and unzip.
 3. Open Docker Destop, find taunometsalu/clustvis under Images and click Run.
 4. Fill in the customer name, port and the location of the ClustVis-master folder as the Host path. Then fill the container path: /srv/shiny-server/:ro
-
+![alt text](clustvis_dockersetup.jpg)
 
 
 
