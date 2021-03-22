@@ -25,6 +25,8 @@ sudo docker run -d \
 
 ClustVis should then be running on ```<myURL>:<myPort>```.
 
+
+
 Alternatively, you can start the container with Docker Desktop:
 
 1. Pull Docker image with command:
