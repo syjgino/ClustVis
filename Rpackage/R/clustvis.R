@@ -471,14 +471,16 @@ processData = function(data, transformation = NA, annoColKeep = NULL, annoColMet
 
 #calculate ellipse coordinates
 calcEllipses = function(x2, conf){
-  tab = table(x2$groupingColor)
+  tab = table(x2$groupingEllip)#table(x2$groupingColor)
   grs = names(tab[tab > 2])
-  x3 = x2[which(x2$groupingColor %in% grs), c("groupingColor", "pcx", "pcy")]
+  x3 = x2[which(x2$groupingEllip %in% grs), c("groupingEllip", "pcx", "pcy","groupingColor")]
   if(nrow(x3) > 0){
-    x3$groupingColor = factor(x3$groupingColor) #coord.ellipse needs that
+    x3$groupingEllip = factor(x3$groupingEllip) #coord.ellipse needs that
     #bary - confidence interval for the mean (TRUE) or prediction interval for the new value (FALSE)
     coord = FactoMineR::coord.ellipse(x3, bary = FALSE, npoint = 200, level.conf = conf)$res
     coord$sample = "sampleX" #dummy to make ggplot work
+    colordic = unique(x3[,c("groupingEllip","groupingColor")])
+    coord = merge(coord, colordic, all.x = TRUE)
   } else {
     coord = NULL
   }
@@ -516,7 +518,7 @@ calcEllipses = function(x2, conf){
 #' @return a structure to be used as input for the function \code{savePCA}.
 #' @import ggplot2
 #' @export
-generatePCA = function(proc, pcx = 1, pcy = 2, switchDirX = FALSE, switchDirY = FALSE, colorAnno = 1, colorScheme = "Set1", showEllipses = TRUE, ellipseConf = 0.95, ellipseLineWidth = 1, ellipseLineType = "solid", shapeAnno = 2, shapeScheme = "various", plotWidth = 20, plotRatio = 0.8, marginRatio = 0.05, pointSize = 5, legendPosition = "right", fontSize = 20, axisLabelPrefix = "PC", showVariance = TRUE, showSampleIds = FALSE, maxColorLevels = 8, maxShapeLevels = 62){
+generatePCA = function(proc, pcx = 1, pcy = 2, switchDirX = FALSE, switchDirY = FALSE, colorAnno = 1, colorScheme = "Set1", showEllipses = TRUE, ellipseAnno=1, ellipseConf = 0.95, ellipseLineWidth = 1, ellipseLineType = "solid", shapeAnno = 2, shapeScheme = "various", plotWidth = 20, plotRatio = 0.8, marginRatio = 0.05, pointSize = 5, legendPosition = "right", fontSize = 24, axisLabelPrefix = "PC", showVariance = TRUE, showSampleIds = FALSE, maxColorLevels = 20, maxShapeLevels = 62){
   if(!(class(proc) %in% c("proc", "NULL"))){
     stop("class of the proc parameter is incorrect!")
   }
@@ -528,12 +530,13 @@ generatePCA = function(proc, pcx = 1, pcy = 2, switchDirX = FALSE, switchDirY = 
   varTable = proc$varTable
   if(is.numeric(colorAnno)) colorAnno = colnames(annoCol)[colorAnno]
   if(is.numeric(shapeAnno)) shapeAnno = colnames(annoCol)[shapeAnno]
+  if(is.numeric(ellipseAnno)) ellipseAnno = colnames(annoCol)[ellipseAnno]
   
   #flip axes in a unified way - to make sure that similar results show similar plot, not mirrored
   for(i in 1:2){
-    if(median(matPca[, pcs[i]]) < 0){
-      matPca[, pcs[i]] = -matPca[, pcs[i]]
-    }
+    #if(median(matPca[, pcs[i]]) < 0){
+    #  matPca[, pcs[i]] = -matPca[, pcs[i]]
+    #}
     if(i %in% switchDirs){
       matPca[, pcs[i]] = -matPca[, pcs[i]]
     }
@@ -552,6 +555,16 @@ generatePCA = function(proc, pcx = 1, pcy = 2, switchDirX = FALSE, switchDirY = 
     return(structure(l, class = "pca"))
   }
   grSep = ", "
+  if(!is.null(ellipseAnno)){
+    x2$groupingEllip = apply(x2[ellipseAnno], 1, function(x) paste0(x, collapse = grSep))
+    if((length(ellipseAnno) == 1) & (class(x2[, ellipseAnno]) == "factor")){
+      x2$groupingEllip = factor(x2$groupingEllip, levels = levels(x2[, ellipseAnno]))
+    }
+    groupingTitleEllip = paste0(ellipseAnno, collapse = grSep)
+  } else {
+    x2$groupingEllip = ""
+    groupingTitleEllip = ""
+  }
   if(!is.null(colorAnno)){
     x2$groupingColor = apply(x2[colorAnno], 1, function(x) paste0(x, collapse = grSep))
     if((length(colorAnno) == 1) & (class(x2[, colorAnno]) == "factor")){
@@ -582,7 +595,7 @@ generatePCA = function(proc, pcx = 1, pcy = 2, switchDirX = FALSE, switchDirY = 
     return(structure(l, class = "pca"))
   }
   ellCoord = calcEllipses(x2, ellipseConf)
-  ellipses = (showEllipses & (length(colorAnno) > 0) & (!is.null(ellCoord)))
+  ellipses = (showEllipses & (length(ellipseAnno) > 0) & (!is.null(ellCoord)))
   
   #collect information for the caption
   captionInfoAdded = list(
@@ -594,7 +607,7 @@ generatePCA = function(proc, pcx = 1, pcy = 2, switchDirX = FALSE, switchDirY = 
   captionInfo = c(proc$captionInfo, captionInfoAdded)
   
   dotsPerCm = 96 / 2.54 #how many points per cm
-  picw = dotsPerCm * plotWidth #width of whole image in pixels
+  picw = dotsPerCm * (plotWidth) #width of whole image in pixels
   margins = c(0, 0, 0, 0)
   plotw = picw - margins[2] - margins[4] #width of internal area
   ploth = plotRatio * plotw #height of internal area
@@ -641,11 +654,18 @@ generatePCA = function(proc, pcx = 1, pcy = 2, switchDirX = FALSE, switchDirY = 
     xlab(xl) + ylab(yl) + geom_point(size = pointSize) +
     coord_fixed(xlim = xrange, ylim = yrange) + ggtitle("") +
     theme_bw(base_size = fontSize) +
-    theme(legend.position = legendPosition, plot.margin = unit(margins, "bigpts"))
+    theme(legend.position = legendPosition, 
+          legend.text=element_text(size=28), legend.title=element_text(size=30),
+          legend.spacing.y=unit(1.5, "cm"), legend.key.size=unit(1, "cm"),
+          panel.background = element_blank(), panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          axis.line = element_line(colour = "black", size = 1.5),
+          plot.margin = unit(c(0,32,0,32), "bigpts")) #margins
   
   #set shape
   shapeListLetters = c(LETTERS, letters, 0:9)
-  shapeListVarious = c(16, 15, 17:18, 1, 0, 2:14)
+  shapeListVarious = c(16, 15, 17:18, 3:4, 6:14, 5, 0:2, 21:25)
   if(length(shapeScheme) > 1 || (length(shapeScheme == 1) && !(shapeScheme %in% c("letters", "various")))){
     if(length(shapeScheme) < nShape) stop("shapeScheme is too short!")
     shapeValues = shapeScheme[1:nShape]
@@ -657,14 +677,18 @@ generatePCA = function(proc, pcx = 1, pcy = 2, switchDirX = FALSE, switchDirY = 
     shapeValues = rep(16, nShape)
   }
   q = q + scale_shape_manual(values = shapeValues)
-  
+  if (all(shapeValues==16)) {
+    q = q + geom_point(size=pointSize, shape=1, color="black")
+  }
+
   #set color
-  if(nColor <= 8 & length(colorAnno) > 0 & colorScheme != "Black"){
+  if(nColor <= 20 & length(colorAnno) > 0 & colorScheme != "Black"){
     if(colorScheme == "Grayscale"){
       #http://stackoverflow.com/questions/20125253/ggplot-2-barplot-with-a-diverging-colour-palette
       q = q + scale_colour_manual(values = rev(RColorBrewer::brewer.pal(nColor, "Greys")))
     } else {
       q = q + scale_colour_brewer(palette = colorScheme)
+      #scale_colour_manual(values = colorRampPalette(brewer.pal(12, "Paired"))(24))
     }
   } else {
     q = q + scale_colour_manual(values = rep("black", nColor))
@@ -693,7 +717,7 @@ generatePCA = function(proc, pcx = 1, pcy = 2, switchDirX = FALSE, switchDirY = 
   #add ellipses
   if(ellipses){
     #http://stackoverflow.com/questions/5415132/object-not-found-error-with-ggplot2-when-adding-shape-aesthetic
-    q = q + geom_path(aes(x = pcx, y = pcy, colour = groupingColor), data = ellCoord, size = ellipseLineWidth, linetype = ellipseLineType, show.legend = FALSE, inherit.aes = FALSE)
+    q = q + geom_path(aes(x = pcx, y = pcy, colour = groupingColor, group = groupingEllip), data = ellCoord, size = ellipseLineWidth, linetype = ellipseLineType, show.legend = FALSE, inherit.aes = FALSE)
   }
   
   caption = createCaption(type = "pca", info = captionInfo)
@@ -875,11 +899,11 @@ calcAnnoLegendColors = function(x, legendColorScheme){
   }
   n = length(levs)
   
-  if(n <= 8){
-    if(legendColorScheme %in% c("Set1", "Pastel1")){
-      cols = RColorBrewer::brewer.pal(9, legendColorScheme)[-6] #without yellow
+  if(n <= 12){
+    if(legendColorScheme %in% c("Set1")){
+      cols = RColorBrewer::brewer.pal(12, legendColorScheme)   #[-6] #without yellow
     } else {
-      cols = RColorBrewer::brewer.pal(8, legendColorScheme)
+      cols = RColorBrewer::brewer.pal(12, legendColorScheme)
     }
     cols = cols[1:n]
   } else {
