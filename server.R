@@ -53,7 +53,7 @@ shinyServer(function(input, output, session) {
 						"hmLegendScheme", "hmClustDistRows", "hmClustDistCols", "hmClustMethodRows", "hmClustMethodCols", 
 						"hmTreeOrderingRows", "hmTreeOrderingCols", "hmColorScheme", "hmCellBorder"),
 					updateCheckboxGroupInput = c(
-            "procAnno", "procCentering", "pcaSwitchDir", "pcaAnnoColor", "pcaAnnoShape", 
+            "procAnno", "procCentering", "pcaSwitchDir", "pcaAnnoColor", "pcaAnnoShape", "pcaAnnoEllip",
             "pcaShowVariance", "pcaShowSampleIds", "pcaShowEllipses", 
             "hmAnnoCol", "hmAnnoRow", "hmRevScheme", "hmShowNumbers", 
 						"hmShowRownames", "hmShowColnames", "hmShowAnnoTitlesCol", "hmShowAnnoTitlesRow", 

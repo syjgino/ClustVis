@@ -118,7 +118,7 @@ fluidPage(
 				conditionalPanel(condition = "input.uploadDataInput == '5'",
 				  h5("Filter annotations:"),
 				  numericInput("uploadMinAnnoLevels", "Minimum number of levels for annotations:", value = 2, min = 1),
-				  numericInput("uploadMaxAnnoLevels", "Maximum number of levels for annotations:", value = 8, min = 1)
+				  numericInput("uploadMaxAnnoLevels", "Maximum number of levels for annotations:", value = 20, min = 1)
 				),
 				
 				conditionalPanel(condition = "input.uploadDataInput == '2' || input.uploadDataInput == '3'",
@@ -195,6 +195,8 @@ fluidPage(
 			conditionalPanel(condition = "input.tabs1 == 'PCA'",
 			  conditionalPanel(condition = jitterPlotCondition("pca", negative = TRUE),
 				h4("PCA options"),
+				checkboxGroupInput("pcaAnnoEllip", "Ellipse grouping:", choices = fakeAnno, selected = fakeAnno),
+				br(),
 				checkboxGroupInput("pcaChangeDataOptions", NULL, c("change data options" = TRUE), FALSE),
 				conditionalPanel(condition = "input.pcaChangeDataOptions != ''",
 				  h5("Data options"),
@@ -215,7 +217,7 @@ fluidPage(
 				    checkboxGroupInput("pcaChangeColorOptions", NULL, c("change coloring options" = TRUE), FALSE),
 				    conditionalPanel(condition = "input.pcaChangeColorOptions != ''",
 				      checkboxGroupInput("pcaAnnoColor", "Color grouping:", choices = fakeAnno, selected = fakeAnno),
-				      selectInput("pcaColor", "Color scheme:", schemeListPCA, "Set1", selectize = useSelectize),
+				      selectInput("pcaColor", "Color scheme:", schemeListPCA, "Paired", selectize = useSelectize),
 				      checkboxGroupInput("pcaShowEllipses", NULL, c("show ellipses around groups" = TRUE), TRUE),
 				      conditionalPanel(condition = "input.pcaShowEllipses != ''",
 				        numericInput("pcaEllipseConf", "Confidence level for ellipses:", 
@@ -234,7 +236,7 @@ fluidPage(
               br(), br()
 				    )
 				  ),
-				  sliderInput("pcaPlotWidth", "Plot width:", value = 20, min = 5, max = 50, step = 0.1),
+				  sliderInput("pcaPlotWidth", "Plot width:", value = 30, min = 5, max = 50, step = 0.1),
 				  numericInput("pcaPlotRatio", "Plot ratio (height / width):", 
                        value = 0.8, min = 0.01, max = 100, step = 0.01),
 				  numericInput("pcaMarginRatio", "Margin ratio:", 
@@ -300,7 +302,7 @@ fluidPage(
 				    checkboxGroupInput("hmAnnoRow", "Row annotations:", choices = fakeAnno, selected = fakeAnno)
           ),
 				  conditionalPanel(condition = "input.hmAnnoCol != '' || input.hmAnnoRow != ''",
-				    selectInput("hmLegendScheme", "Annotation color scheme:", choices = colQualitative, selected = "Set1", selectize = useSelectize)
+				    selectInput("hmLegendScheme", "Annotation color scheme:", choices = colQualitative, selected = "RdBu", selectize = useSelectize)
 				  ),
 				  sliderInput("hmPlotWidth", "Plot width:", value = 25, min = 5, max = 50, step = 0.1),
 				  numericInput("hmPlotRatio", "Plot ratio (height / width):", value = 0.8, min = 0.01, max = 100, step = 0.01),
@@ -402,6 +404,7 @@ fluidPage(
       #quote in the tooltip not working! (e.g. axes')
 			bsTooltip("pcaShowVariance", "Whether to show percentage of variance explained added to the labels of the axes.", tooltipPlace, options = tooltipOptions),
 			bsTooltip("pcaAnnoColor", "Color grouping shown in the legend. Multiple annotations can be chosen; in this case, they are combined.", tooltipPlace, options = tooltipOptions),
+			bsTooltip("pcaAnnoEllip", "Ellipse grouping shown in the legend. Multiple annotations can be chosen; in this case, they are combined.", tooltipPlace, options = tooltipOptions),
 			bsTooltip("pcaAnnoShape", "Shape grouping shown in the legend. Multiple annotations can be chosen; in this case, they are combined.", tooltipPlace, options = tooltipOptions),
 			bsTooltip("pcaPlotWidth", "In arbitrary units.", tooltipPlace, options = tooltipOptions),
 			bsTooltip("pcaPlotRatio", "This applies to the plotting area, i.e. to the rectangle where points are situated (it does not take axis labels and legend into account).", tooltipPlace, options = tooltipOptions),

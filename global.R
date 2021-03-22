@@ -89,7 +89,7 @@ if(logUsage && !file.exists(logFile)) cat(str_c(c("time", "input", "nrow", "ncol
 #R package parameters:
 maxComponents = 100 #maximum number of principal components to calculate (more will make it too slow)
 #maximum number of levels allowed for color and shape on PCA plot and heatmap (too many levels can make rendering slow and output ugly):
-maxColorLevels = 8 #for PCA plot
+maxColorLevels = 20 #for PCA plot
 maxShapeLevels = 62 #for PCA plot
 maxAnnoLevels = 30 #for heatmap
 
@@ -97,7 +97,7 @@ maxAnnoLevels = 30 #for heatmap
 find = c("UA-63396304-1", "UA-63396304-2", "UA-63396304-3")
 replace = c("original", "test", "large data")
 clustvisEdition = mapvalues(Sys.getenv("SHINY_GAID"), find, replace, warn_missing = FALSE)
-if(!(clustvisEdition %in% replace)) clustvisEdition = "custom"
+if(!(clustvisEdition %in% replace)) clustvisEdition = "GinoEllipseAnno"
 if(clustvisEdition != "original"){
   maxDimensionHeatmap = 2400
   maxTooltipsPCA = 600
@@ -426,6 +426,7 @@ updatePcaOptions = function(session, mat, input){
   updateSelectInput(session, "pcaPcy", choices = as.character(1:npc), selected = "2")
   updateCheckboxGroupInput(session, "pcaAnnoColor", choices = cnFiltered, selected = colorSel)
   updateCheckboxGroupInput(session, "pcaAnnoShape", choices = cnFiltered, selected = shapeSel)
+  updateCheckboxGroupInput(session, "pcaAnnoEllip", choices = cnFiltered, selected = colorSel)
 }
 
 updateHmOptions = function(session, mat, cnr, cnc){
@@ -620,6 +621,7 @@ plotPCA = function(data){
   colorAnno = inputSaved$pcaAnnoColor
   colorScheme = inputSaved$pcaColor
   showEllipses = toBoolean(inputSaved$pcaShowEllipses)
+  ellipseAnno = inputSaved$pcaAnnoEllip
   ellipseConf = inputSaved$pcaEllipseConf
   ellipseLineWidth = inputSaved$pcaEllipseLineWidth
   ellipseLineType = inputSaved$pcaEllipseLineType
@@ -640,7 +642,7 @@ plotPCA = function(data){
     showSampleIds = toBoolean(inputSaved$pcaShowSampleIds)
   }
   
-  generatePCA(proc = data, pcx = pcx, pcy = pcy, switchDirX = switchDirX, switchDirY = switchDirY, colorAnno = colorAnno, colorScheme = colorScheme, showEllipses = showEllipses, ellipseConf = ellipseConf, ellipseLineWidth = ellipseLineWidth, ellipseLineType = ellipseLineType, shapeAnno = shapeAnno, shapeScheme = shapeScheme, plotWidth = plotWidth, plotRatio = plotRatio, marginRatio = marginRatio, pointSize = pointSize, legendPosition = legendPosition, fontSize = fontSize, axisLabelPrefix = axisLabelPrefix, showVariance = showVariance, showSampleIds = showSampleIds, maxColorLevels = maxColorLevels, maxShapeLevels = maxShapeLevels)
+  generatePCA(proc = data, pcx = pcx, pcy = pcy, switchDirX = switchDirX, switchDirY = switchDirY, ellipseAnno = ellipseAnno, colorAnno = colorAnno, colorScheme = colorScheme, showEllipses = showEllipses, ellipseConf = ellipseConf, ellipseLineWidth = ellipseLineWidth, ellipseLineType = ellipseLineType, shapeAnno = shapeAnno, shapeScheme = shapeScheme, plotWidth = plotWidth, plotRatio = plotRatio, marginRatio = marginRatio, pointSize = pointSize, legendPosition = legendPosition, fontSize = fontSize, axisLabelPrefix = axisLabelPrefix, showVariance = showVariance, showSampleIds = showSampleIds, maxColorLevels = maxColorLevels, maxShapeLevels = maxShapeLevels)
 }
 
 plotHeatmap = function(data){
